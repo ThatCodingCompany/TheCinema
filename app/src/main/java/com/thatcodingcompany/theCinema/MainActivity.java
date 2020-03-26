@@ -4,9 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -32,5 +35,22 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return true;
+    }
+
+
+    public void ButtonCreateRoom(View view) {
+        Button button = (Button) view;
+        if (button.getText().equals(getString(R.string.bt_createRoom))) {
+            Intent intent = new Intent(MainActivity.this,CreateRoomActivity.class);
+            startActivity(intent);
+        }
+    }
+
+    public void ButtonJoinRoom(View view) {
+        Button button = (Button) view;
+        if (button.getText().equals(getString(R.string.bt_joinRoom))) {
+            Intent intent = new Intent(MainActivity.this,JoinRoomActivity.class);
+            startActivity(intent);
+        }
     }
 }
