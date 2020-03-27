@@ -16,7 +16,7 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <TextureView
-        android:id="@+id/textureView2"
+        android:id="@+id/TextureViewPreview"
         android:layout_width="140dp"
         android:layout_height="206dp"
         app:layout_constraintBottom_toTopOf="@+id/textureView3"
@@ -27,7 +27,7 @@
         app:layout_constraintVertical_bias="1.0" />
 
     <TextureView
-        android:id="@+id/textureView3"
+        android:id="@+id/TextureViewRemote"
         android:layout_width="140dp"
         android:layout_height="206dp"
         app:layout_constraintBottom_toBottomOf="parent"

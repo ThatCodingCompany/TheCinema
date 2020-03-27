@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -21,6 +22,7 @@ import im.zego.zegoexpress.constants.ZegoPublisherState;
 import im.zego.zegoexpress.constants.ZegoRoomState;
 import im.zego.zegoexpress.constants.ZegoScenario;
 import im.zego.zegoexpress.constants.ZegoUpdateType;
+import im.zego.zegoexpress.entity.ZegoCanvas;
 import im.zego.zegoexpress.entity.ZegoStream;
 import im.zego.zegoexpress.entity.ZegoUser;
 
@@ -111,8 +113,10 @@ public class CreateRoomActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate: Login room.");
         camaraStreamId = "camara" + UUID.randomUUID().toString();
         filmStreamId = "film" + UUID.randomUUID().toString();
-        engine.setAppOrientation(ZegoOrientation.ORIENTATION_0);
+        engine.setAppOrientation(ZegoOrientation.ORIENTATION_90);
         engine.startPublishingStream(camaraStreamId);
+        View local_view = findViewById(R.id.TextureViewPreview);
+        engine.startPreview(new ZegoCanvas(local_view));
     }
 
     @Override
