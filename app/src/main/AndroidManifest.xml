@@ -14,6 +14,9 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <uses-feature
         android:glEsVersion="0x00020000"
         android:required="true" />
@@ -30,12 +33,10 @@
         tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name=".JoinRoomActivity"
-            android:screenOrientation="landscape"
-            />
+            android:screenOrientation="landscape" />
         <activity
             android:name=".CreateRoomActivity"
-            android:screenOrientation="landscape"
-            />
+            android:screenOrientation="landscape" />
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

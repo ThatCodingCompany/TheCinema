@@ -54,7 +54,7 @@ public class CreateRoomActivity extends AppCompatActivity {
     private ArrayList<String> remoteStreamIds;
 
     private String mpath;
-    private ZegoMediaPlayer mediaplayer=null;
+    private ZegoMediaPlayer mediaplayer = null;
     private long currentResourceTotalDuration;
 
     @Override
@@ -168,31 +168,16 @@ public class CreateRoomActivity extends AppCompatActivity {
         ImageButton loadresource;
         final TextureView textureView;
         //初始化控件
-        buttonplay=findViewById(R.id.Button_play);
-        loadresource=findViewById(R.id.Button_loadresource);
-        textureView=findViewById(R.id.textureView);
-        mediaplayer=ZegoMediaPlayer.createMediaPlayer();
+        buttonplay = findViewById(R.id.Button_play);
+        loadresource = findViewById(R.id.Button_loadresource);
+        textureView = findViewById(R.id.textureView);
+        mediaplayer = ZegoMediaPlayer.createMediaPlayer();
 
         loadresource.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mediaplayer!=null){
+                if (mediaplayer != null) {
                     openSystemFile();
-                    Toast.makeText(CreateRoomActivity.this, mpath, Toast.LENGTH_LONG).show();
-                    mediaplayer.loadResource(mpath, new IZegoMediaPlayerLoadResourceCallback() {
-                        @Override
-                        public void onLoadResourceCallback(int i) {
-                                if(i != 0){
-                                    Log.e(TAG, "onLoadResourceCallback:" + i);
-                                    Toast.makeText(CreateRoomActivity.this, "加载本地资源异常:"+i, Toast.LENGTH_LONG).show();
-                                }
-                                // 只有在加载成功之后 getTotalDuration 才会返回正常的数值
-                                //currentResourceTotalDuration = mediaplayer.getTotalDuration();
-                                //Log.d(TAG, "currentResourceTotalDuration: " + currentResourceTotalDuration);
-                                //Toast.makeText(CreateRoomActivity.this, "currentResourceTotalDuration: "+ currentResourceTotalDuration, Toast.LENGTH_LONG).show();
-                                Toast.makeText(CreateRoomActivity.this, "加载:", Toast.LENGTH_LONG).show();
-                            }
-                        });
                 }
             }
         });
@@ -200,11 +185,31 @@ public class CreateRoomActivity extends AppCompatActivity {
         buttonplay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d(TAG, "BeforeLoading: " + mpath);
+                mediaplayer.loadResource(mpath, new IZegoMediaPlayerLoadResourceCallback() {
+                    @Override
+                    public void onLoadResourceCallback(int i) {
+                        if (i != 0) {
+                            Log.e(TAG, "onLoadResourceCallback:" + i);
+                            Toast.makeText(CreateRoomActivity.this, "加载本地资源异常:" + i,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                        // 只有在加载成功之后 getTotalDuration 才会返回正常的数值
+                        currentResourceTotalDuration = mediaplayer.getTotalDuration();
+                        Log.d(TAG, "currentResourceTotalDuration: " +
+                                currentResourceTotalDuration);
+                        Toast.makeText(CreateRoomActivity.this,
+                                "currentResourceTotalDuration: " + currentResourceTotalDuration,
+                                Toast.LENGTH_LONG).show();
+                        //Toast.makeText(CreateRoomActivity.this, "加载:", Toast.LENGTH_LONG).show();
+                    }
+                });
                 mediaplayer.setPlayerCanvas(new ZegoCanvas(textureView));
                 mediaplayer.start();
             }
         });
     }
+
     public void openSystemFile() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         // 所有类型
@@ -225,23 +230,14 @@ public class CreateRoomActivity extends AppCompatActivity {
         if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
             //Get the Uri of the selected file
             Uri uri = data.getData();
-            if (null != uri) {
+            if (uri != null) {
                 String path = Filechoose.getPath(this, uri);
                 Log.i("filepath", " = " + path);
-                updateFilePath(path);
+                mpath = path;
+                Log.i(TAG, "onActivityResult: mpath" + mpath);
             }
         }
     }
-
-    private void updateFilePath(final String path) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mpath=path;
-            }
-        });
-    }
-
 
     @Override
     protected void onDestroy() {
