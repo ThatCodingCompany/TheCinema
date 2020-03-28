@@ -1,10 +1,15 @@
 package com.thatcodingcompany.theCinema;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -151,6 +156,18 @@ public class CreateRoomActivity extends AppCompatActivity {
         userId = UUID.randomUUID().toString();
         userName = userId;
         roomId = UUID.randomUUID().toString();
+
+        new AlertDialog.Builder(this).setTitle("把房间口令发给朋友吧！").setMessage(roomId)
+                .setPositiveButton("复制到剪切板", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        ClipboardManager clipboardManager =
+                                (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipData clipData = ClipData.newPlainText("TheCinemaLabel", roomId);
+                        clipboardManager.setPrimaryClip(clipData);
+                    }
+                }).setNegativeButton("取消", null).show();
+
         //Log.d(TAG, "onCreate: \n" + userId);
         ZegoUser user = new ZegoUser(userId, userName);
         engine.loginRoom(roomId, user, null);
