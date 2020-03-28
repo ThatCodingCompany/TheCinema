@@ -127,6 +127,25 @@ public class CreateRoomActivity extends AppCompatActivity {
                 /** The stream status is updated. After logging into the room, when there is
                  * a new publish or delete of audio and video stream,
                  * the SDK will notify through this callback */
+                if (updateType.equals(ZegoUpdateType.ADD)) {
+                    for (int i = 0; i < streamList.size(); ++i) {
+                        ZegoStream currentStream = streamList.get(i);
+                        if (currentStream.streamID.equals(camaraStreamId)
+                                || currentStream.streamID.equals(filmStreamId)) {
+                            continue;
+                        } else {
+                            if (currentStream.streamID.substring(0, 6).equals("camara")) {
+                                View remoteCamara = findViewById(R.id.TextureViewRemote);
+                                engine.startPlayingStream(currentStream.streamID,
+                                        new ZegoCanvas(remoteCamara));
+                            } else if (currentStream.streamID.substring(0, 4).equals("film")) {
+                                View remoteFilm = findViewById(R.id.textureView);
+                                engine.startPlayingStream(currentStream.streamID,
+                                        new ZegoCanvas(remoteFilm));
+                            }
+                        }
+                    }
+                }
 
             }
 
