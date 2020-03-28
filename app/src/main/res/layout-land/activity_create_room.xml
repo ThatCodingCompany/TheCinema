@@ -4,12 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".JoinRoomActivity">
+    tools:context=".CreateRoomActivity">
 
     <TextureView
         android:id="@+id/textureView"
-        android:layout_width="592dp"
-        android:layout_height="370dp"
+        android:layout_width="501dp"
+        android:layout_height="323dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -19,7 +19,7 @@
         android:id="@+id/TextureViewPreview"
         android:layout_width="140dp"
         android:layout_height="206dp"
-        app:layout_constraintBottom_toTopOf="@+id/textureView3"
+        app:layout_constraintBottom_toTopOf="@+id/TextureViewRemote"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/textureView"
@@ -36,10 +36,23 @@
         app:layout_constraintStart_toEndOf="@+id/textureView" />
 
     <ImageButton
-        android:id="@+id/imageButton"
+        android:id="@+id/Button_play"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textureView"
         app:srcCompat="@android:drawable/ic_media_play" />
+
+    <ImageButton
+        android:id="@+id/Button_loadresource"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="60dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/Button_play"
+        app:layout_constraintTop_toBottomOf="@+id/textureView"
+        app:layout_constraintVertical_bias="0.666"
+        app:srcCompat="@android:drawable/btn_star" />
 </androidx.constraintlayout.widget.ConstraintLayout>
