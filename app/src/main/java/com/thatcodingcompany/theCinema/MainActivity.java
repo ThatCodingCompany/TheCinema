@@ -25,11 +25,14 @@ public class MainActivity extends AppCompatActivity {
     public boolean checkOrRequestPermission() {
         String[] PERMISSIONS_STORAGE = {
                 "android.permission.CAMERA",
-                "android.permission.RECORD_AUDIO"};
+                "android.permission.RECORD_AUDIO",
+                "android.permission.READ_EXTERNAL_STORAGE"};
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this, "android.permission.CAMERA") != PackageManager.PERMISSION_GRANTED
-                    || ContextCompat.checkSelfPermission(this, "android.permission.RECORD_AUDIO") != PackageManager.PERMISSION_GRANTED) {
+                    || ContextCompat.checkSelfPermission(this, "android.permission.RECORD_AUDIO") != PackageManager.PERMISSION_GRANTED
+                    || ContextCompat.checkSelfPermission(this, "android.permission" +
+                    ".READ_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(PERMISSIONS_STORAGE, 101);
                 return false;
             }
@@ -41,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     public void ButtonCreateRoom(View view) {
         Button button = (Button) view;
         if (button.getText().equals(getString(R.string.bt_createRoom))) {
-            Intent intent = new Intent(MainActivity.this,CreateRoomActivity.class);
+            Intent intent = new Intent(MainActivity.this, CreateRoomActivity.class);
             startActivity(intent);
         }
     }
@@ -49,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     public void ButtonJoinRoom(View view) {
         Button button = (Button) view;
         if (button.getText().equals(getString(R.string.bt_joinRoom))) {
-            Intent intent = new Intent(MainActivity.this,JoinRoomActivity.class);
+            Intent intent = new Intent(MainActivity.this, JoinRoomActivity.class);
             startActivity(intent);
         }
     }

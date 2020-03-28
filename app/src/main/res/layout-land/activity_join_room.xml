@@ -36,7 +36,7 @@
         app:layout_constraintStart_toEndOf="@+id/textureView" />
 
     <ImageButton
-        android:id="@+id/imageButton"
+        android:id="@+id/Button_play"
         android:layout_width="40dp"
         android:layout_height="40dp"
         app:layout_constraintStart_toStartOf="parent"

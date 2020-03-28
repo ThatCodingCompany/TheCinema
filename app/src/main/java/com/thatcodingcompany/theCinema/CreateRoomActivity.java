@@ -1,12 +1,21 @@
 package com.thatcodingcompany.theCinema;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.TextureView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageButton;
+import android.widget.RadioButton;
+import android.widget.Toast;
 
 import org.json.JSONObject;
 
@@ -14,8 +23,10 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import im.zego.zegoexpress.ZegoExpressEngine;
+import im.zego.zegoexpress.ZegoMediaPlayer;
 import im.zego.zegoexpress.callback.IZegoCustomVideoCaptureHandler;
 import im.zego.zegoexpress.callback.IZegoEventHandler;
+import im.zego.zegoexpress.callback.IZegoMediaPlayerLoadResourceCallback;
 import im.zego.zegoexpress.constants.ZegoLanguage;
 import im.zego.zegoexpress.constants.ZegoOrientation;
 import im.zego.zegoexpress.constants.ZegoPlayerState;
@@ -41,6 +52,10 @@ public class CreateRoomActivity extends AppCompatActivity {
     private String camaraStreamId;
     private String filmStreamId;
     private ArrayList<String> remoteStreamIds;
+
+    private String mpath;
+    private ZegoMediaPlayer mediaplayer = null;
+    private long currentResourceTotalDuration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,6 +161,82 @@ public class CreateRoomActivity extends AppCompatActivity {
         engine.startPublishingStream(camaraStreamId, ZegoPublishChannel.MAIN);
         View local_view = findViewById(R.id.TextureViewPreview);
         engine.startPreview(new ZegoCanvas(local_view), ZegoPublishChannel.MAIN);
+
+
+        //mediaplaer
+        ImageButton buttonplay;
+        ImageButton loadresource;
+        final TextureView textureView;
+        //初始化控件
+        buttonplay = findViewById(R.id.Button_play);
+        loadresource = findViewById(R.id.Button_loadresource);
+        textureView = findViewById(R.id.textureView);
+        mediaplayer = ZegoMediaPlayer.createMediaPlayer();
+
+        loadresource.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mediaplayer != null) {
+                    openSystemFile();
+                }
+            }
+        });
+
+        buttonplay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "BeforeLoading: " + mpath);
+                mediaplayer.loadResource(mpath, new IZegoMediaPlayerLoadResourceCallback() {
+                    @Override
+                    public void onLoadResourceCallback(int i) {
+                        if (i != 0) {
+                            Log.e(TAG, "onLoadResourceCallback:" + i);
+                            Toast.makeText(CreateRoomActivity.this, "加载本地资源异常:" + i,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                        // 只有在加载成功之后 getTotalDuration 才会返回正常的数值
+                        currentResourceTotalDuration = mediaplayer.getTotalDuration();
+                        Log.d(TAG, "currentResourceTotalDuration: " +
+                                currentResourceTotalDuration);
+                        Toast.makeText(CreateRoomActivity.this,
+                                "currentResourceTotalDuration: " + currentResourceTotalDuration,
+                                Toast.LENGTH_LONG).show();
+                        //Toast.makeText(CreateRoomActivity.this, "加载:", Toast.LENGTH_LONG).show();
+                    }
+                });
+                mediaplayer.setPlayerCanvas(new ZegoCanvas(textureView));
+                mediaplayer.start();
+            }
+        });
+    }
+
+    public void openSystemFile() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        // 所有类型
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        try {
+            startActivityForResult(Intent.createChooser(intent, "请选择文件"), 1);
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+            Toast.makeText(CreateRoomActivity.this, "请安装文件管理器", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
+            //Get the Uri of the selected file
+            Uri uri = data.getData();
+            if (uri != null) {
+                String path = Filechoose.getPath(this, uri);
+                Log.i("filepath", " = " + path);
+                mpath = path;
+                Log.i(TAG, "onActivityResult: mpath" + mpath);
+            }
+        }
     }
 
     @Override
@@ -154,6 +245,8 @@ public class CreateRoomActivity extends AppCompatActivity {
         engine.stopPreview();
         engine.logoutRoom(roomId);
         ZegoExpressEngine.destroyEngine(null);
+        mediaplayer.destroyMediaPlayer();
+        mediaplayer = null;
         super.onDestroy();
     }
 }
