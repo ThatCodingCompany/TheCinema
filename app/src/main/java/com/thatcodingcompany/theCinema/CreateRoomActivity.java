@@ -14,15 +14,20 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import im.zego.zegoexpress.ZegoExpressEngine;
+import im.zego.zegoexpress.callback.IZegoCustomVideoCaptureHandler;
 import im.zego.zegoexpress.callback.IZegoEventHandler;
 import im.zego.zegoexpress.constants.ZegoLanguage;
 import im.zego.zegoexpress.constants.ZegoOrientation;
 import im.zego.zegoexpress.constants.ZegoPlayerState;
+import im.zego.zegoexpress.constants.ZegoPublishChannel;
 import im.zego.zegoexpress.constants.ZegoPublisherState;
 import im.zego.zegoexpress.constants.ZegoRoomState;
 import im.zego.zegoexpress.constants.ZegoScenario;
 import im.zego.zegoexpress.constants.ZegoUpdateType;
+import im.zego.zegoexpress.constants.ZegoVideoBufferType;
 import im.zego.zegoexpress.entity.ZegoCanvas;
+import im.zego.zegoexpress.entity.ZegoCustomVideoCaptureConfig;
+import im.zego.zegoexpress.entity.ZegoEngineConfig;
 import im.zego.zegoexpress.entity.ZegoStream;
 import im.zego.zegoexpress.entity.ZegoUser;
 
@@ -44,9 +49,32 @@ public class CreateRoomActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_create_room);
+
+        ZegoCustomVideoCaptureConfig videoCaptureConfig = new ZegoCustomVideoCaptureConfig();
+        //TODO: Data type may have to be modified.
+        videoCaptureConfig.bufferType = ZegoVideoBufferType.RAW_DATA;
+        ZegoEngineConfig engineConfig = new ZegoEngineConfig();
+        engineConfig.customVideoCaptureAuxConfig = videoCaptureConfig;
+        ZegoExpressEngine.setEngineConfig(engineConfig);
+
         engine = ZegoExpressEngine.createEngine(idConfig.appid, idConfig.appsign,
                 true, ZegoScenario.GENERAL, getApplication(), null);
         engine.setDebugVerbose(true, ZegoLanguage.CHINESE);
+
+        engine.setCustomVideoCaptureHandler(new IZegoCustomVideoCaptureHandler() {
+            @Override
+            public void onStart(ZegoPublishChannel channel) {
+                // 收到回调后，开发者需要执行启动视频采集相关的业务逻辑，例如开启摄像头等
+
+            }
+
+            @Override
+            public void onStop(ZegoPublishChannel channel) {
+                // 收到回调后，开发者需要执行停止视频采集相关的业务逻辑，例如关闭摄像头等
+
+            }
+        });
+
         engine.setEventHandler(new IZegoEventHandler() {
             /** 常用回调 */
             /** The following are callbacks frequently used */
@@ -114,9 +142,9 @@ public class CreateRoomActivity extends AppCompatActivity {
         camaraStreamId = "camara" + UUID.randomUUID().toString();
         filmStreamId = "film" + UUID.randomUUID().toString();
         engine.setAppOrientation(ZegoOrientation.ORIENTATION_90);
-        engine.startPublishingStream(camaraStreamId);
+        engine.startPublishingStream(camaraStreamId, ZegoPublishChannel.MAIN);
         View local_view = findViewById(R.id.TextureViewPreview);
-        engine.startPreview(new ZegoCanvas(local_view));
+        engine.startPreview(new ZegoCanvas(local_view), ZegoPublishChannel.MAIN);
     }
 
     @Override
