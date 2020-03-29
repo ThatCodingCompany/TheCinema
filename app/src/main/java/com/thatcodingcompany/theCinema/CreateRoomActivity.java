@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import org.json.JSONObject;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -31,7 +32,9 @@ import im.zego.zegoexpress.ZegoExpressEngine;
 import im.zego.zegoexpress.ZegoMediaPlayer;
 import im.zego.zegoexpress.callback.IZegoCustomVideoCaptureHandler;
 import im.zego.zegoexpress.callback.IZegoEventHandler;
+import im.zego.zegoexpress.callback.IZegoMediaPlayerEventHandler;
 import im.zego.zegoexpress.callback.IZegoMediaPlayerLoadResourceCallback;
+import im.zego.zegoexpress.callback.IZegoMediaPlayerVideoHandler;
 import im.zego.zegoexpress.constants.ZegoLanguage;
 import im.zego.zegoexpress.constants.ZegoOrientation;
 import im.zego.zegoexpress.constants.ZegoPlayerState;
@@ -41,26 +44,29 @@ import im.zego.zegoexpress.constants.ZegoRoomState;
 import im.zego.zegoexpress.constants.ZegoScenario;
 import im.zego.zegoexpress.constants.ZegoUpdateType;
 import im.zego.zegoexpress.constants.ZegoVideoBufferType;
+import im.zego.zegoexpress.constants.ZegoVideoFrameFormat;
 import im.zego.zegoexpress.entity.ZegoCanvas;
 import im.zego.zegoexpress.entity.ZegoCustomVideoCaptureConfig;
 import im.zego.zegoexpress.entity.ZegoEngineConfig;
 import im.zego.zegoexpress.entity.ZegoStream;
 import im.zego.zegoexpress.entity.ZegoUser;
+import im.zego.zegoexpress.entity.ZegoVideoFrameParam;
 
 public class CreateRoomActivity extends AppCompatActivity {
     public static ZegoExpressEngine engine = null;
     public static final String TAG = "CreateRoom";
-    private ArrayList<String> streamForPulling;
+
     private String userId;
     private String userName;
     private String roomId;
     private String camaraStreamId;
     private String filmStreamId;
-    private ArrayList<String> remoteStreamIds;
+    private boolean readyForPush = false;
 
     private String mpath;
     private ZegoMediaPlayer mediaplayer = null;
     private long currentResourceTotalDuration;
+    long playingProgress = 0L;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +92,7 @@ public class CreateRoomActivity extends AppCompatActivity {
             @Override
             public void onStart(ZegoPublishChannel channel) {
                 // 收到回调后，开发者需要执行启动视频采集相关的业务逻辑，例如开启摄像头等
-
+                readyForPush = true;
             }
 
             @Override
@@ -138,10 +144,6 @@ public class CreateRoomActivity extends AppCompatActivity {
                                 View remoteCamara = findViewById(R.id.TextureViewRemote);
                                 engine.startPlayingStream(currentStream.streamID,
                                         new ZegoCanvas(remoteCamara));
-                            } else if (currentStream.streamID.substring(0, 4).equals("film")) {
-                                View remoteFilm = findViewById(R.id.textureView);
-                                engine.startPlayingStream(currentStream.streamID,
-                                        new ZegoCanvas(remoteFilm));
                             }
                         }
                     }
@@ -209,6 +211,30 @@ public class CreateRoomActivity extends AppCompatActivity {
         textureView = findViewById(R.id.textureView);
         mediaplayer = ZegoMediaPlayer.createMediaPlayer();
 
+        mediaplayer.setEventHandler(new IZegoMediaPlayerEventHandler() {
+            @Override
+            public void onMediaPlayerPlayingProgress(ZegoMediaPlayer mediaPlayer,
+                                                     long millisecond) {
+                playingProgress = millisecond;
+            }
+        });
+
+        mediaplayer.setVideoHandler(new IZegoMediaPlayerVideoHandler() {
+            @Override
+            public void onVideoFrame(ZegoMediaPlayer mediaPlayer, ByteBuffer[] data,
+                                     int[] dataLength, ZegoVideoFrameParam param) {
+                //for (int i = 0; i < data.length; ++i) {
+                Log.d(TAG, "IsReadyForPush " + readyForPush);
+                Log.d(TAG, "onFrameLength1: " + data.length);
+                Log.d(TAG, "onFrameLength2: " + dataLength.length);
+                if (readyForPush) {
+                    engine.sendCustomVideoCaptureRawData(data[0], dataLength[0], param,
+                            playingProgress, ZegoPublishChannel.AUX);//TODO: fix Index 0 HERE
+                }
+                //}
+            }
+        }, ZegoVideoFrameFormat.Unknown);
+
         loadresource.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -244,6 +270,7 @@ public class CreateRoomActivity extends AppCompatActivity {
                 mediaplayer.start();
             }
         });
+        engine.startPublishingStream(filmStreamId, ZegoPublishChannel.AUX);
     }
 
     public void openSystemFile() {
