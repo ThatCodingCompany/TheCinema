@@ -45,6 +45,7 @@ import im.zego.zegoexpress.constants.ZegoScenario;
 import im.zego.zegoexpress.constants.ZegoUpdateType;
 import im.zego.zegoexpress.constants.ZegoVideoBufferType;
 import im.zego.zegoexpress.constants.ZegoVideoFrameFormat;
+import im.zego.zegoexpress.constants.ZegoViewMode;
 import im.zego.zegoexpress.entity.ZegoCanvas;
 import im.zego.zegoexpress.entity.ZegoCustomVideoCaptureConfig;
 import im.zego.zegoexpress.entity.ZegoEngineConfig;
@@ -85,7 +86,7 @@ public class CreateRoomActivity extends AppCompatActivity {
         engineConfig.customVideoCaptureAuxConfig = videoCaptureConfig;
         ZegoExpressEngine.setEngineConfig(engineConfig);
         ZegoVideoConfig zegoVideoConfig = new ZegoVideoConfig();
-        zegoVideoConfig.setCaptureResolution(592, 370);
+        zegoVideoConfig.setCaptureResolution(1080, 1920);
 
         engine = ZegoExpressEngine.createEngine(idConfig.appid, idConfig.appsign,
                 true, ZegoScenario.GENERAL, getApplication(), null);
@@ -234,12 +235,14 @@ public class CreateRoomActivity extends AppCompatActivity {
                     Log.d(TAG, "onFrameLength1: " + data.length);
                     Log.d(TAG, "onFrameLength2: " + dataLength.length);
                     if (readyForPush) {
+                        engine.setCustomVideoCaptureFillMode(ZegoViewMode.SCALE_TO_FILL,
+                                ZegoPublishChannel.AUX);
                         engine.sendCustomVideoCaptureRawData(data[i], dataLength[i], param,
                                 playingProgress, ZegoPublishChannel.AUX);//TODO: fix Index 0 HERE
                     }
                 }
             }
-        }, ZegoVideoFrameFormat.Unknown);
+        }, ZegoVideoFrameFormat.I420);
 
         loadresource.setOnClickListener(new View.OnClickListener() {
             @Override
