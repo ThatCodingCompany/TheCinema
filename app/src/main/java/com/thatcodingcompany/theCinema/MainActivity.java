@@ -26,13 +26,16 @@ public class MainActivity extends AppCompatActivity {
         String[] PERMISSIONS_STORAGE = {
                 "android.permission.CAMERA",
                 "android.permission.RECORD_AUDIO",
-                "android.permission.READ_EXTERNAL_STORAGE"};
+                "android.permission.READ_EXTERNAL_STORAGE",
+                "android.permission.WRITE_EXTERNAL_STORAGE"};
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this, "android.permission.CAMERA") != PackageManager.PERMISSION_GRANTED
                     || ContextCompat.checkSelfPermission(this, "android.permission.RECORD_AUDIO") != PackageManager.PERMISSION_GRANTED
                     || ContextCompat.checkSelfPermission(this, "android.permission" +
-                    ".READ_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
+                    ".READ_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED
+                    || ContextCompat.checkSelfPermission(this, "android.permission" +
+                    ".WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(PERMISSIONS_STORAGE, 101);
                 return false;
             }
@@ -55,5 +58,10 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, JoinRoomActivity.class);
             startActivity(intent);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 }
