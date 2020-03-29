@@ -217,6 +217,7 @@ public class CreateRoomActivity extends AppCompatActivity {
         textureView = findViewById(R.id.textureView);
         mediaplayer = ZegoMediaPlayer.createMediaPlayer();
         mediaplayer.setProgressInterval(10);
+        mediaplayer.enableAux(true);
 
         mediaplayer.setEventHandler(new IZegoMediaPlayerEventHandler() {
             @Override
