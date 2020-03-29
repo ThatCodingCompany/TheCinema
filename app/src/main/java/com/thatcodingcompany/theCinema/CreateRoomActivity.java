@@ -195,7 +195,7 @@ public class CreateRoomActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate: Login room.");
         camaraStreamId = "camara" + UUID.randomUUID().toString();
         filmStreamId = "film" + UUID.randomUUID().toString();
-        engine.setAppOrientation(ZegoOrientation.ORIENTATION_90);
+        engine.setAppOrientation(ZegoOrientation.ORIENTATION_90, ZegoPublishChannel.MAIN);
         engine.startPublishingStream(camaraStreamId, ZegoPublishChannel.MAIN);
         View local_view = findViewById(R.id.TextureViewPreview);
         engine.startPreview(new ZegoCanvas(local_view), ZegoPublishChannel.MAIN);
@@ -210,6 +210,7 @@ public class CreateRoomActivity extends AppCompatActivity {
         loadresource = findViewById(R.id.Button_loadresource);
         textureView = findViewById(R.id.textureView);
         mediaplayer = ZegoMediaPlayer.createMediaPlayer();
+        mediaplayer.setProgressInterval(30);
 
         mediaplayer.setEventHandler(new IZegoMediaPlayerEventHandler() {
             @Override
@@ -223,15 +224,15 @@ public class CreateRoomActivity extends AppCompatActivity {
             @Override
             public void onVideoFrame(ZegoMediaPlayer mediaPlayer, ByteBuffer[] data,
                                      int[] dataLength, ZegoVideoFrameParam param) {
-                //for (int i = 0; i < data.length; ++i) {
-                Log.d(TAG, "IsReadyForPush " + readyForPush);
-                Log.d(TAG, "onFrameLength1: " + data.length);
-                Log.d(TAG, "onFrameLength2: " + dataLength.length);
-                if (readyForPush) {
-                    engine.sendCustomVideoCaptureRawData(data[0], dataLength[0], param,
-                            playingProgress, ZegoPublishChannel.AUX);//TODO: fix Index 0 HERE
+                for (int i = 0; i < data.length - 1; ++i) {
+                    Log.d(TAG, "IsReadyForPush " + readyForPush);
+                    Log.d(TAG, "onFrameLength1: " + data.length);
+                    Log.d(TAG, "onFrameLength2: " + dataLength.length);
+                    if (readyForPush) {
+                        engine.sendCustomVideoCaptureRawData(data[i], dataLength[i], param,
+                                playingProgress, ZegoPublishChannel.AUX);//TODO: fix Index 0 HERE
+                    }
                 }
-                //}
             }
         }, ZegoVideoFrameFormat.Unknown);
 
