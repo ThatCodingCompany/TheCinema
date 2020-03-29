@@ -86,7 +86,7 @@ public class CreateRoomActivity extends AppCompatActivity {
         engineConfig.customVideoCaptureAuxConfig = videoCaptureConfig;
         ZegoExpressEngine.setEngineConfig(engineConfig);
         ZegoVideoConfig zegoVideoConfig = new ZegoVideoConfig();
-        zegoVideoConfig.setCaptureResolution(1080, 1920);
+        zegoVideoConfig.setEncodeResolution(1920, 1080);
 
         engine = ZegoExpressEngine.createEngine(idConfig.appid, idConfig.appsign,
                 true, ZegoScenario.GENERAL, getApplication(), null);
@@ -216,7 +216,7 @@ public class CreateRoomActivity extends AppCompatActivity {
         loadresource = findViewById(R.id.Button_loadresource);
         textureView = findViewById(R.id.textureView);
         mediaplayer = ZegoMediaPlayer.createMediaPlayer();
-        mediaplayer.setProgressInterval(30);
+        mediaplayer.setProgressInterval(10);
 
         mediaplayer.setEventHandler(new IZegoMediaPlayerEventHandler() {
             @Override
