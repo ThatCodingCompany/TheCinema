@@ -86,7 +86,8 @@ public class CreateRoomActivity extends AppCompatActivity {
         engineConfig.customVideoCaptureAuxConfig = videoCaptureConfig;
         ZegoExpressEngine.setEngineConfig(engineConfig);
         ZegoVideoConfig zegoVideoConfig = new ZegoVideoConfig();
-        zegoVideoConfig.setCaptureResolution(1080, 1920);
+        //zegoVideoConfig.setCaptureResolution(1920, 1080);
+        zegoVideoConfig.setEncodeResolution(1920, 1080);
 
         engine = ZegoExpressEngine.createEngine(idConfig.appid, idConfig.appsign,
                 true, ZegoScenario.GENERAL, getApplication(), null);
@@ -216,7 +217,7 @@ public class CreateRoomActivity extends AppCompatActivity {
         loadresource = findViewById(R.id.Button_loadresource);
         textureView = findViewById(R.id.textureView);
         mediaplayer = ZegoMediaPlayer.createMediaPlayer();
-        mediaplayer.setProgressInterval(30);
+        mediaplayer.setProgressInterval(10);
 
         mediaplayer.setEventHandler(new IZegoMediaPlayerEventHandler() {
             @Override
@@ -230,17 +231,23 @@ public class CreateRoomActivity extends AppCompatActivity {
             @Override
             public void onVideoFrame(ZegoMediaPlayer mediaPlayer, ByteBuffer[] data,
                                      int[] dataLength, ZegoVideoFrameParam param) {
-                for (int i = 0; i < data.length - 1; ++i) {
+                //for (int i = 0; i < data.length - 1; ++i) {
                     Log.d(TAG, "IsReadyForPush " + readyForPush);
                     Log.d(TAG, "onFrameLength1: " + data.length);
                     Log.d(TAG, "onFrameLength2: " + dataLength.length);
                     if (readyForPush) {
-                        engine.setCustomVideoCaptureFillMode(ZegoViewMode.SCALE_TO_FILL,
-                                ZegoPublishChannel.AUX);
-                        engine.sendCustomVideoCaptureRawData(data[i], dataLength[i], param,
+
+                     //   engine.sendCustomVideoCaptureRawData(data[i], dataLength[i], param,
+                     //           playingProgress, ZegoPublishChannel.AUX);//TODO: fix Index 0 HERE
+                        engine.sendCustomVideoCaptureRawData(data[0], dataLength[0], param,
                                 playingProgress, ZegoPublishChannel.AUX);//TODO: fix Index 0 HERE
+                        View remoteFilm = findViewById(R.id.textureView2);
+                        engine.startPlayingStream(filmStreamId,
+                                new ZegoCanvas(remoteFilm));
+                       // engine.setCustomVideoCaptureFillMode(ZegoViewMode.SCALE_TO_FILL,
+                        //        ZegoPublishChannel.AUX);
                     }
-                }
+                //}
             }
         }, ZegoVideoFrameFormat.I420);
 
