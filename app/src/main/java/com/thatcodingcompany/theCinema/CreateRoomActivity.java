@@ -50,6 +50,7 @@ import im.zego.zegoexpress.entity.ZegoCustomVideoCaptureConfig;
 import im.zego.zegoexpress.entity.ZegoEngineConfig;
 import im.zego.zegoexpress.entity.ZegoStream;
 import im.zego.zegoexpress.entity.ZegoUser;
+import im.zego.zegoexpress.entity.ZegoVideoConfig;
 import im.zego.zegoexpress.entity.ZegoVideoFrameParam;
 
 public class CreateRoomActivity extends AppCompatActivity {
@@ -83,6 +84,9 @@ public class CreateRoomActivity extends AppCompatActivity {
         ZegoEngineConfig engineConfig = new ZegoEngineConfig();
         engineConfig.customVideoCaptureAuxConfig = videoCaptureConfig;
         ZegoExpressEngine.setEngineConfig(engineConfig);
+        ZegoVideoConfig zegoVideoConfig = new ZegoVideoConfig();
+        zegoVideoConfig.setCaptureResolution(592, 370);
+        engine.setVideoConfig(zegoVideoConfig, ZegoPublishChannel.AUX);
 
         engine = ZegoExpressEngine.createEngine(idConfig.appid, idConfig.appsign,
                 true, ZegoScenario.GENERAL, getApplication(), null);
