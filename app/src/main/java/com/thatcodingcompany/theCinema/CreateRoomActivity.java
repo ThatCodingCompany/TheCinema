@@ -86,11 +86,12 @@ public class CreateRoomActivity extends AppCompatActivity {
         ZegoExpressEngine.setEngineConfig(engineConfig);
         ZegoVideoConfig zegoVideoConfig = new ZegoVideoConfig();
         zegoVideoConfig.setCaptureResolution(592, 370);
-        engine.setVideoConfig(zegoVideoConfig, ZegoPublishChannel.AUX);
 
         engine = ZegoExpressEngine.createEngine(idConfig.appid, idConfig.appsign,
                 true, ZegoScenario.GENERAL, getApplication(), null);
         engine.setDebugVerbose(true, ZegoLanguage.CHINESE);
+
+        engine.setVideoConfig(zegoVideoConfig, ZegoPublishChannel.AUX);
 
         engine.setCustomVideoCaptureHandler(new IZegoCustomVideoCaptureHandler() {
             @Override
