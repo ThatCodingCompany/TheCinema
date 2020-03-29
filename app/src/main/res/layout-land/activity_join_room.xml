@@ -19,7 +19,7 @@
         android:id="@+id/TextureViewPreview"
         android:layout_width="140dp"
         android:layout_height="206dp"
-        app:layout_constraintBottom_toTopOf="@+id/textureView3"
+        app:layout_constraintBottom_toTopOf="@+id/TextureViewRemote"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/textureView"
@@ -34,12 +34,4 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/textureView" />
-
-    <ImageButton
-        android:id="@+id/Button_play"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textureView"
-        app:srcCompat="@android:drawable/ic_media_play" />
 </androidx.constraintlayout.widget.ConstraintLayout>
