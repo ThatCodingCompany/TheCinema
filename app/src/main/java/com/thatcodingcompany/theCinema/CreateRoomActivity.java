@@ -235,8 +235,6 @@ public class CreateRoomActivity extends AppCompatActivity {
                     Log.d(TAG, "onFrameLength1: " + data.length);
                     Log.d(TAG, "onFrameLength2: " + dataLength.length);
                     if (readyForPush) {
-                        engine.setCustomVideoCaptureFillMode(ZegoViewMode.SCALE_TO_FILL,
-                                ZegoPublishChannel.AUX);
                         engine.sendCustomVideoCaptureRawData(data[i], dataLength[i], param,
                                 playingProgress, ZegoPublishChannel.AUX);//TODO: fix Index 0 HERE
                     }
@@ -280,6 +278,11 @@ public class CreateRoomActivity extends AppCompatActivity {
             }
         });
         engine.startPublishingStream(filmStreamId, ZegoPublishChannel.AUX);
+        if (readyForPush) {
+            Log.d(TAG, "setCustomVideoCaptureFillMode Working now");
+            engine.setCustomVideoCaptureFillMode(ZegoViewMode.SCALE_TO_FILL,
+                    ZegoPublishChannel.AUX);
+        }
     }
 
     public void openSystemFile() {
