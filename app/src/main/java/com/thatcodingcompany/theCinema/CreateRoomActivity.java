@@ -132,21 +132,12 @@ public class CreateRoomActivity extends AppCompatActivity {
             public void onRoomStateUpdate(String roomID, ZegoRoomState state, int errorCode,
                                           JSONObject extendedData) {
                 /** 房间状态回调，在登录房间后，当房间状态发生变化（例如房间断开，认证失败等），SDK会通过该接口通知 */
-                /** Room status update callback: after logging into the room, when the room
-                 * connection status changes
-                 * (such as room disconnection, login authentication failure, etc.), the SDK
-                 * will notify through the callback
-                 */
             }
 
             @Override
             public void onRoomUserUpdate(String roomID, ZegoUpdateType updateType,
                                          ArrayList<ZegoUser> userList) {
                 /** 房间状态更新，在登录房间后，当用户进入或退出房间，SDK会通过该接口通知 */
-                /** User status is updated. After logging into the room, when a user is added
-                 *  or deleted in the room,
-                 * the SDK will notify through this callback
-                 */
             }
 
             @Override
@@ -178,11 +169,6 @@ public class CreateRoomActivity extends AppCompatActivity {
             public void onPublisherStateUpdate(String streamID, ZegoPublisherState state,
                                                int errorCode, JSONObject extendedData) {
                 /** 在调用推流接口成功后，推流状态变更（例如由于网络中断引起的流状态异常），SDK会通过该接口通知 */
-                /** After calling the stream publishing interface successfully, when the
-                 * status of the stream changes,
-                 * such as the exception of streaming caused by network interruption, the SDK
-                 * will notify through this callback
-                 */
             }
 
 
@@ -190,11 +176,6 @@ public class CreateRoomActivity extends AppCompatActivity {
             public void onPlayerStateUpdate(String streamID, ZegoPlayerState state,
                                             int errorCode, JSONObject extendedData) {
                 /** 在调用拉流接口成功后，拉流状态变更（例如由于网络中断引起的流状态异常），SDK会通过该接口通知 */
-                /** After calling the streaming interface successfully, when the status of
-                 * the stream changes,
-                 * such as network interruption leading to abnormal situation, the SDK will
-                 * notify through
-                 * this callback */
             }
         });
         userId = UUID.randomUUID().toString();
@@ -212,10 +193,10 @@ public class CreateRoomActivity extends AppCompatActivity {
                     }
                 }).setNegativeButton("取消", null).show();
 
-        //Log.d(TAG, "onCreate: \n" + userId);
+
         ZegoUser user = new ZegoUser(userId, userName);
         engine.loginRoom(roomId, user, null);
-        Log.d(TAG, "onCreate: Login room.");
+
         camaraStreamId = "camara" + UUID.randomUUID().toString();
         filmStreamId = "film" + UUID.randomUUID().toString();
         engine.setAppOrientation(ZegoOrientation.ORIENTATION_90, ZegoPublishChannel.MAIN);
@@ -268,9 +249,7 @@ public class CreateRoomActivity extends AppCompatActivity {
             public void onVideoFrame(ZegoMediaPlayer mediaPlayer, ByteBuffer[] data,
                                      int[] dataLength, ZegoVideoFrameParam param) {
                 for (int i = 0; i < data.length - 1; ++i) {
-                    Log.d(TAG, "IsReadyForPush " + readyForPush);
-                    Log.d(TAG, "onFrameLength1: " + data.length);
-                    Log.d(TAG, "onFrameLength2: " + dataLength.length);
+
                     if (readyForPush) {
                         engine.sendCustomVideoCaptureRawData(data[i], dataLength[i], param,
                                 playingProgress, ZegoPublishChannel.AUX);//TODO: fix Index 0 HERE
@@ -286,7 +265,6 @@ public class CreateRoomActivity extends AppCompatActivity {
     }
 
     public void setVolume() {
-        //setvolume=findViewById(R.id.seekBar_volume);
         setvolume.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
                     @Override
@@ -296,27 +274,22 @@ public class CreateRoomActivity extends AppCompatActivity {
 
                     @Override
                     public void onStartTrackingTouch(SeekBar seekBar) {
-
                     }
 
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
-
                     }
                 });
     }
 
     public void setProg() {
-        //setprogress=findViewById(R.id.seekBar_progress);
         setprogress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
@@ -325,7 +298,6 @@ public class CreateRoomActivity extends AppCompatActivity {
                 mediaplayer.seekTo(nowprogress, new IZegoMediaPlayerSeekToCallback() {
                     @Override
                     public void onSeekToTimeCallback(int errorCode) {
-
                     }
                 });
             }
@@ -352,7 +324,7 @@ public class CreateRoomActivity extends AppCompatActivity {
 
             Log.d(TAG, "BeforeLoading: " + mpath);
             if (mediastate != 0) {
-                //mediastate==0意味播放器不在播放
+                //mediastate == 0  意味播放器不在播放
                 playButton.setText(R.string.bt_mediaplay);
                 mediaplayer.stop();
             }
@@ -368,10 +340,6 @@ public class CreateRoomActivity extends AppCompatActivity {
                     currentResourceTotalDuration = mediaplayer.getTotalDuration();
                     Log.d(TAG, "currentResourceTotalDuration: " +
                             currentResourceTotalDuration);
-                    Toast.makeText(CreateRoomActivity.this,
-                            "currentResourceTotalDuration: " + currentResourceTotalDuration,
-                            Toast.LENGTH_LONG).show();
-                    //Toast.makeText(CreateRoomActivity.this, "加载:", Toast.LENGTH_LONG).show();
                 }
             });
             mediaplayer.setVolume(50);
