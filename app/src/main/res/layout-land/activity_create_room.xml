@@ -8,13 +8,13 @@
 
     <Button
         android:id="@+id/button_play"
-        android:layout_width="56dp"
-        android:layout_height="44dp"
+        android:layout_width="105dp"
+        android:layout_height="60dp"
         android:hint="@string/bt_mediaplay"
         android:onClick="buttonmediaplay"
         android:text="播放"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/button_filechose" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextureView
         android:id="@+id/textureView"
@@ -51,8 +51,9 @@
 
     <Button
         android:id="@+id/button_filechose"
-        android:layout_width="81dp"
-        android:layout_height="44dp"
+        android:layout_width="102dp"
+        android:layout_height="61dp"
+        android:layout_marginBottom="76dp"
         android:hint="@string/bt_filechose"
         android:onClick="buttonfilechose"
         android:text="选择文件"
@@ -61,12 +62,19 @@
 
     <SeekBar
         android:id="@+id/seekBar_volume"
-        android:layout_width="159dp"
-        android:layout_height="26dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginBottom="6dp"
+        android:layout_width="184dp"
+        android:layout_height="51dp"
+        android:layout_marginBottom="168dp"
         android:progress="50"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/button_play" />
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <SeekBar
+        android:id="@+id/seekBar_progress"
+        android:layout_width="533dp"
+        android:layout_height="61dp"
+        android:layout_marginStart="124dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

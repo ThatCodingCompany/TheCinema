@@ -11,9 +11,12 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.View;
 import android.view.Window;
@@ -35,6 +38,7 @@ import im.zego.zegoexpress.callback.IZegoCustomVideoCaptureHandler;
 import im.zego.zegoexpress.callback.IZegoEventHandler;
 import im.zego.zegoexpress.callback.IZegoMediaPlayerEventHandler;
 import im.zego.zegoexpress.callback.IZegoMediaPlayerLoadResourceCallback;
+import im.zego.zegoexpress.callback.IZegoMediaPlayerSeekToCallback;
 import im.zego.zegoexpress.callback.IZegoMediaPlayerVideoHandler;
 import im.zego.zegoexpress.constants.ZegoLanguage;
 import im.zego.zegoexpress.constants.ZegoMediaPlayerState;
@@ -68,8 +72,13 @@ public class CreateRoomActivity extends AppCompatActivity {
 
     private String mpath;
     private ZegoMediaPlayer mediaplayer = null;
-    private long currentResourceTotalDuration;
+    private long currentResourceTotalDuration=100;
     private SeekBar setvolume;
+    private Button buttonplay;
+    private Button buttonchosefile;
+    private SeekBar setprogress;
+    private boolean isPlayButtonDisabled = false;
+
     long playingProgress = 0L;
     int mediastate;
 
@@ -81,6 +90,11 @@ public class CreateRoomActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_create_room);
         getSupportActionBar().hide();
+
+        //设置背景色
+        Resources res = getResources();
+        Drawable drawable = res.getDrawable(R.drawable.background);
+        this.getWindow().setBackgroundDrawable(drawable);
 
         ZegoCustomVideoCaptureConfig videoCaptureConfig = new ZegoCustomVideoCaptureConfig();
         //TODO: Data type may have to be modified.
@@ -215,6 +229,11 @@ public class CreateRoomActivity extends AppCompatActivity {
         //初始化控件
 
         textureView = findViewById(R.id.textureView);
+        buttonplay=findViewById(R.id.button_play);
+        buttonchosefile=findViewById(R.id.button_filechose);
+        setvolume=findViewById(R.id.seekBar_volume);
+        setprogress=findViewById(R.id.seekBar_progress);
+
         mediaplayer = ZegoMediaPlayer.createMediaPlayer();
         mediaplayer.setProgressInterval(10);
         mediaplayer.enableAux(true);
@@ -225,12 +244,19 @@ public class CreateRoomActivity extends AppCompatActivity {
             public void onMediaPlayerPlayingProgress(ZegoMediaPlayer mediaPlayer,
                                                      long millisecond) {
                 playingProgress = millisecond;
+                long total=100*playingProgress/currentResourceTotalDuration;
+                int t=(int)total;
+                setprogress.setProgress(t);
             }
             @Override
             public void onMediaPlayerStateUpdate(ZegoMediaPlayer mediaPlayer, ZegoMediaPlayerState state, int errorCode) {
                 // 本回调在UI线程被回调, 开发者可以在此进行UI的变化, 例如播放按钮的变化
                 Log.d(TAG, "onMediaPlayerStateUpdate: state = " + state.value() + ", errorCode = " + errorCode + ", zegoExpressMediaplayer = " + mediaPlayer);
                 mediastate=state.value();
+                if(mediastate==3){
+                    //播放结束 更新按钮值
+                    buttonplay.setText(getString(R.string.bt_mediaplay));
+                }
             }
         });
 
@@ -253,10 +279,11 @@ public class CreateRoomActivity extends AppCompatActivity {
         engine.startPublishingStream(filmStreamId, ZegoPublishChannel.AUX);
 
         setVolume();
+        setProg();
     }
 
 public void setVolume(){
-        setvolume=findViewById(R.id.seekBar_volume);
+        //setvolume=findViewById(R.id.seekBar_volume);
         setvolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -288,6 +315,31 @@ public void setVolume(){
         );
     }
 
+    public void setProg() {
+        //setprogress=findViewById(R.id.seekBar_progress);
+        setprogress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                long nowprogress=currentResourceTotalDuration*setprogress.getProgress()/100;
+                mediaplayer.seekTo(nowprogress, new IZegoMediaPlayerSeekToCallback() {
+                    @Override
+                    public void onSeekToTimeCallback(int errorCode) {
+
+                    }
+                });
+            }
+        });
+    }
 
     public void buttonfilechose(View view){
         Button button = (Button)view;
@@ -369,6 +421,52 @@ public void setVolume(){
                 Log.i(TAG, "onActivityResult: mpath" + mpath);
             }
         }
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN){
+            //将buttonchosefile作为特征量
+           if(buttonchosefile.getVisibility()==buttonchosefile.VISIBLE){
+               //再判断点击是否在所有控件外
+               if(hidejudge(buttonchosefile,ev)&&hidejudge(buttonplay,ev)&&
+                       hidejudge(setvolume,ev)&&hidejudge(setprogress,ev)){
+                   buttonchosefile.setVisibility(buttonchosefile.GONE);
+                   buttonplay.setVisibility(buttonplay.GONE);
+                   setvolume.setVisibility(setvolume.GONE);
+                   setprogress.setVisibility(setprogress.GONE);
+               }
+
+           }
+           else{
+               buttonchosefile.setVisibility(buttonchosefile.VISIBLE);
+
+               //对播放按钮和进度条和音量设置做特别判断
+               if(isPlayButtonDisabled == false) {
+                   buttonplay.setVisibility(buttonplay.VISIBLE);
+                   setprogress.setVisibility(setprogress.VISIBLE);
+                   setvolume.setVisibility(setvolume.VISIBLE);
+               }
+           }
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+    private boolean hidejudge(View view,MotionEvent ev) {
+        //判断点击是否发生在控件外
+        int[] location = {0, 0};
+        // 获取当前view在屏幕中离四边的边距
+        view.getLocationInWindow(location);
+
+        int left = location[0], top = location[1], right = view.getWidth(),
+                bottom = top + view.getHeight();
+
+        // 判断点击位置是否在view布局范围内
+        if (ev.getRawX() < left || ev.getRawX() > right
+                || ev.getY() < top || ev.getRawY() > bottom) {
+            return true;
+        }
+        else return false;
     }
 
     @Override
