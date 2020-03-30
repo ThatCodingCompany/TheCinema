@@ -18,8 +18,9 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.RadioButton;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import org.json.JSONObject;
@@ -36,6 +37,7 @@ import im.zego.zegoexpress.callback.IZegoMediaPlayerEventHandler;
 import im.zego.zegoexpress.callback.IZegoMediaPlayerLoadResourceCallback;
 import im.zego.zegoexpress.callback.IZegoMediaPlayerVideoHandler;
 import im.zego.zegoexpress.constants.ZegoLanguage;
+import im.zego.zegoexpress.constants.ZegoMediaPlayerState;
 import im.zego.zegoexpress.constants.ZegoOrientation;
 import im.zego.zegoexpress.constants.ZegoPlayerState;
 import im.zego.zegoexpress.constants.ZegoPublishChannel;
@@ -45,7 +47,6 @@ import im.zego.zegoexpress.constants.ZegoScenario;
 import im.zego.zegoexpress.constants.ZegoUpdateType;
 import im.zego.zegoexpress.constants.ZegoVideoBufferType;
 import im.zego.zegoexpress.constants.ZegoVideoFrameFormat;
-import im.zego.zegoexpress.constants.ZegoViewMode;
 import im.zego.zegoexpress.entity.ZegoCanvas;
 import im.zego.zegoexpress.entity.ZegoCustomVideoCaptureConfig;
 import im.zego.zegoexpress.entity.ZegoEngineConfig;
@@ -68,7 +69,9 @@ public class CreateRoomActivity extends AppCompatActivity {
     private String mpath;
     private ZegoMediaPlayer mediaplayer = null;
     private long currentResourceTotalDuration;
+    private SeekBar setvolume;
     long playingProgress = 0L;
+    int mediastate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -208,22 +211,26 @@ public class CreateRoomActivity extends AppCompatActivity {
 
 
         //mediaplaer
-        ImageButton buttonplay;
-        ImageButton loadresource;
         final TextureView textureView;
         //初始化控件
-        buttonplay = findViewById(R.id.Button_play);
-        loadresource = findViewById(R.id.Button_loadresource);
+
         textureView = findViewById(R.id.textureView);
         mediaplayer = ZegoMediaPlayer.createMediaPlayer();
         mediaplayer.setProgressInterval(10);
         mediaplayer.enableAux(true);
+        mediaplayer.setPlayerCanvas(new ZegoCanvas(textureView));
 
         mediaplayer.setEventHandler(new IZegoMediaPlayerEventHandler() {
             @Override
             public void onMediaPlayerPlayingProgress(ZegoMediaPlayer mediaPlayer,
                                                      long millisecond) {
                 playingProgress = millisecond;
+            }
+            @Override
+            public void onMediaPlayerStateUpdate(ZegoMediaPlayer mediaPlayer, ZegoMediaPlayerState state, int errorCode) {
+                // 本回调在UI线程被回调, 开发者可以在此进行UI的变化, 例如播放按钮的变化
+                Log.d(TAG, "onMediaPlayerStateUpdate: state = " + state.value() + ", errorCode = " + errorCode + ", zegoExpressMediaplayer = " + mediaPlayer);
+                mediastate=state.value();
             }
         });
 
@@ -243,46 +250,95 @@ public class CreateRoomActivity extends AppCompatActivity {
             }
         }, ZegoVideoFrameFormat.I420);
 
-        loadresource.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mediaplayer != null) {
-                    openSystemFile();
-                }
-            }
-        });
+        engine.startPublishingStream(filmStreamId, ZegoPublishChannel.AUX);
 
-        buttonplay.setOnClickListener(new View.OnClickListener() {
+        setVolume();
+    }
+
+public void setVolume(){
+        setvolume=findViewById(R.id.seekBar_volume);
+        setvolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onClick(View v) {
-                Log.d(TAG, "BeforeLoading: " + mpath);
-                mediaplayer.loadResource(mpath, new IZegoMediaPlayerLoadResourceCallback() {
-                    @Override
-                    public void onLoadResourceCallback(int i) {
-                        if (i != 0) {
-                            Log.e(TAG, "onLoadResourceCallback:" + i);
-                            Toast.makeText(CreateRoomActivity.this, "加载本地资源异常:" + i,
-                                    Toast.LENGTH_LONG).show();
-                        }
-                        // 只有在加载成功之后 getTotalDuration 才会返回正常的数值
-                        currentResourceTotalDuration = mediaplayer.getTotalDuration();
-                        Log.d(TAG, "currentResourceTotalDuration: " +
-                                currentResourceTotalDuration);
-                        Toast.makeText(CreateRoomActivity.this,
-                                "currentResourceTotalDuration: " + currentResourceTotalDuration,
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mediaplayer.setVolume(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        }
+/*
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+
+ */
+        );
+    }
+
+
+    public void buttonfilechose(View view){
+        Button button = (Button)view;
+        if(button.getText().equals(getString(R.string.bt_filechose))){
+            openSystemFile();
+            button.setText(getString(R.string.bt_loadfile));
+        }
+        else{
+            Log.d(TAG, "BeforeLoading: " + mpath);
+            if(mediastate!=0){
+                //mediastate==0意味播放器不在播放
+                mediaplayer.stop();
+            }
+            mediaplayer.loadResource(mpath, new IZegoMediaPlayerLoadResourceCallback() {
+                @Override
+                public void onLoadResourceCallback(int i) {
+                    if (i != 0) {
+                        Log.e(TAG, "onLoadResourceCallback:" + i);
+                        Toast.makeText(CreateRoomActivity.this, "加载本地资源异常:" + i,
                                 Toast.LENGTH_LONG).show();
-                        //Toast.makeText(CreateRoomActivity.this, "加载:", Toast.LENGTH_LONG).show();
                     }
-                });
-                mediaplayer.setPlayerCanvas(new ZegoCanvas(textureView));
+                    // 只有在加载成功之后 getTotalDuration 才会返回正常的数值
+                    currentResourceTotalDuration = mediaplayer.getTotalDuration();
+                    Log.d(TAG, "currentResourceTotalDuration: " +
+                            currentResourceTotalDuration);
+                    Toast.makeText(CreateRoomActivity.this,
+                            "currentResourceTotalDuration: " + currentResourceTotalDuration,
+                            Toast.LENGTH_LONG).show();
+                    //Toast.makeText(CreateRoomActivity.this, "加载:", Toast.LENGTH_LONG).show();
+                }
+            });
+            mediaplayer.setVolume(50);
+            button.setText(getString(R.string.bt_filechose));
+        }
+    }
+
+    public void buttonmediaplay(View view){
+        Button button = (Button)view;
+        if(button.getText().equals(getString(R.string.bt_mediaplay))){
+            if(mediastate==2){
+                //如果播放器状态为暂停播放
+                mediaplayer.resume();
+            }
+            else{
                 mediaplayer.start();
             }
-        });
-        engine.startPublishingStream(filmStreamId, ZegoPublishChannel.AUX);
-        if (readyForPush) {
-            Log.d(TAG, "setCustomVideoCaptureFillMode Working now");
-            engine.setCustomVideoCaptureFillMode(ZegoViewMode.SCALE_TO_FILL,
-                    ZegoPublishChannel.AUX);
+            button.setText(getString(R.string.bt_mediapause));
+        }
+        else{
+            mediaplayer.pause();
+            button.setText(getString(R.string.bt_mediaplay));
         }
     }
 
@@ -320,9 +376,9 @@ public class CreateRoomActivity extends AppCompatActivity {
         engine.stopPublishingStream();
         engine.stopPreview();
         engine.logoutRoom(roomId);
-        ZegoExpressEngine.destroyEngine(null);
         mediaplayer.destroyMediaPlayer();
         mediaplayer = null;
+        ZegoExpressEngine.destroyEngine(null);
         super.onDestroy();
     }
 }
