@@ -6,4 +6,5 @@
     <string name="bt_mediaplay">播放</string>
     <string name="bt_loadfile">加载文件</string>
     <string name="bt_mediapause">暂停</string>
+    <drawable name="background">#444444</drawable>
 </resources>

@@ -11,9 +11,12 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.View;
 import android.view.Window;
@@ -35,6 +38,7 @@ import im.zego.zegoexpress.callback.IZegoCustomVideoCaptureHandler;
 import im.zego.zegoexpress.callback.IZegoEventHandler;
 import im.zego.zegoexpress.callback.IZegoMediaPlayerEventHandler;
 import im.zego.zegoexpress.callback.IZegoMediaPlayerLoadResourceCallback;
+import im.zego.zegoexpress.callback.IZegoMediaPlayerSeekToCallback;
 import im.zego.zegoexpress.callback.IZegoMediaPlayerVideoHandler;
 import im.zego.zegoexpress.constants.ZegoLanguage;
 import im.zego.zegoexpress.constants.ZegoMediaPlayerState;
@@ -68,8 +72,13 @@ public class CreateRoomActivity extends AppCompatActivity {
 
     private String mpath;
     private ZegoMediaPlayer mediaplayer = null;
-    private long currentResourceTotalDuration;
+    private long currentResourceTotalDuration = 100;
     private SeekBar setvolume;
+    private Button buttonplay;
+    private Button buttonchosefile;
+    private SeekBar setprogress;
+    private boolean isPlayButtonDisabled = false;
+
     long playingProgress = 0L;
     int mediastate;
 
@@ -81,6 +90,11 @@ public class CreateRoomActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_create_room);
         getSupportActionBar().hide();
+
+        //设置背景色
+        Resources res = getResources();
+        Drawable drawable = res.getDrawable(R.drawable.background);
+        this.getWindow().setBackgroundDrawable(drawable);
 
         ZegoCustomVideoCaptureConfig videoCaptureConfig = new ZegoCustomVideoCaptureConfig();
         //TODO: Data type may have to be modified.
@@ -118,21 +132,12 @@ public class CreateRoomActivity extends AppCompatActivity {
             public void onRoomStateUpdate(String roomID, ZegoRoomState state, int errorCode,
                                           JSONObject extendedData) {
                 /** 房间状态回调，在登录房间后，当房间状态发生变化（例如房间断开，认证失败等），SDK会通过该接口通知 */
-                /** Room status update callback: after logging into the room, when the room
-                 * connection status changes
-                 * (such as room disconnection, login authentication failure, etc.), the SDK
-                 * will notify through the callback
-                 */
             }
 
             @Override
             public void onRoomUserUpdate(String roomID, ZegoUpdateType updateType,
                                          ArrayList<ZegoUser> userList) {
                 /** 房间状态更新，在登录房间后，当用户进入或退出房间，SDK会通过该接口通知 */
-                /** User status is updated. After logging into the room, when a user is added
-                 *  or deleted in the room,
-                 * the SDK will notify through this callback
-                 */
             }
 
             @Override
@@ -164,11 +169,6 @@ public class CreateRoomActivity extends AppCompatActivity {
             public void onPublisherStateUpdate(String streamID, ZegoPublisherState state,
                                                int errorCode, JSONObject extendedData) {
                 /** 在调用推流接口成功后，推流状态变更（例如由于网络中断引起的流状态异常），SDK会通过该接口通知 */
-                /** After calling the stream publishing interface successfully, when the
-                 * status of the stream changes,
-                 * such as the exception of streaming caused by network interruption, the SDK
-                 * will notify through this callback
-                 */
             }
 
 
@@ -176,11 +176,6 @@ public class CreateRoomActivity extends AppCompatActivity {
             public void onPlayerStateUpdate(String streamID, ZegoPlayerState state,
                                             int errorCode, JSONObject extendedData) {
                 /** 在调用拉流接口成功后，拉流状态变更（例如由于网络中断引起的流状态异常），SDK会通过该接口通知 */
-                /** After calling the streaming interface successfully, when the status of
-                 * the stream changes,
-                 * such as network interruption leading to abnormal situation, the SDK will
-                 * notify through
-                 * this callback */
             }
         });
         userId = UUID.randomUUID().toString();
@@ -198,10 +193,10 @@ public class CreateRoomActivity extends AppCompatActivity {
                     }
                 }).setNegativeButton("取消", null).show();
 
-        //Log.d(TAG, "onCreate: \n" + userId);
+
         ZegoUser user = new ZegoUser(userId, userName);
         engine.loginRoom(roomId, user, null);
-        Log.d(TAG, "onCreate: Login room.");
+
         camaraStreamId = "camara" + UUID.randomUUID().toString();
         filmStreamId = "film" + UUID.randomUUID().toString();
         engine.setAppOrientation(ZegoOrientation.ORIENTATION_90, ZegoPublishChannel.MAIN);
@@ -215,6 +210,11 @@ public class CreateRoomActivity extends AppCompatActivity {
         //初始化控件
 
         textureView = findViewById(R.id.textureView);
+        buttonplay = findViewById(R.id.button_play);
+        buttonchosefile = findViewById(R.id.button_filechose);
+        setvolume = findViewById(R.id.seekBar_volume);
+        setprogress = findViewById(R.id.seekBar_progress);
+
         mediaplayer = ZegoMediaPlayer.createMediaPlayer();
         mediaplayer.setProgressInterval(10);
         mediaplayer.enableAux(true);
@@ -225,12 +225,22 @@ public class CreateRoomActivity extends AppCompatActivity {
             public void onMediaPlayerPlayingProgress(ZegoMediaPlayer mediaPlayer,
                                                      long millisecond) {
                 playingProgress = millisecond;
+                long total = 100 * playingProgress / currentResourceTotalDuration;
+                int t = (int) total;
+                setprogress.setProgress(t);
             }
+
             @Override
-            public void onMediaPlayerStateUpdate(ZegoMediaPlayer mediaPlayer, ZegoMediaPlayerState state, int errorCode) {
+            public void onMediaPlayerStateUpdate(ZegoMediaPlayer mediaPlayer,
+                                                 ZegoMediaPlayerState state, int errorCode) {
                 // 本回调在UI线程被回调, 开发者可以在此进行UI的变化, 例如播放按钮的变化
-                Log.d(TAG, "onMediaPlayerStateUpdate: state = " + state.value() + ", errorCode = " + errorCode + ", zegoExpressMediaplayer = " + mediaPlayer);
-                mediastate=state.value();
+                Log.d(TAG, "onMediaPlayerStateUpdate: state = " + state.value() + ", errorCode = "
+                        + errorCode + ", zegoExpressMediaplayer = " + mediaPlayer);
+                mediastate = state.value();
+                if (mediastate == 3) {
+                    //播放结束 更新按钮值
+                    buttonplay.setText(getString(R.string.bt_mediaplay));
+                }
             }
         });
 
@@ -239,9 +249,7 @@ public class CreateRoomActivity extends AppCompatActivity {
             public void onVideoFrame(ZegoMediaPlayer mediaPlayer, ByteBuffer[] data,
                                      int[] dataLength, ZegoVideoFrameParam param) {
                 for (int i = 0; i < data.length - 1; ++i) {
-                    Log.d(TAG, "IsReadyForPush " + readyForPush);
-                    Log.d(TAG, "onFrameLength1: " + data.length);
-                    Log.d(TAG, "onFrameLength2: " + dataLength.length);
+
                     if (readyForPush) {
                         engine.sendCustomVideoCaptureRawData(data[i], dataLength[i], param,
                                 playingProgress, ZegoPublishChannel.AUX);//TODO: fix Index 0 HERE
@@ -253,52 +261,71 @@ public class CreateRoomActivity extends AppCompatActivity {
         engine.startPublishingStream(filmStreamId, ZegoPublishChannel.AUX);
 
         setVolume();
+        setProg();
     }
 
-public void setVolume(){
-        setvolume=findViewById(R.id.seekBar_volume);
-        setvolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+    public void setVolume() {
+        setvolume.setOnSeekBarChangeListener(
+                new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        mediaplayer.setVolume(progress);
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                    }
+                });
+    }
+
+    public void setProg() {
+        setprogress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mediaplayer.setVolume(progress);
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+                long nowprogress = currentResourceTotalDuration * setprogress.getProgress() / 100;
+                mediaplayer.seekTo(nowprogress, new IZegoMediaPlayerSeekToCallback() {
+                    @Override
+                    public void onSeekToTimeCallback(int errorCode) {
+                    }
+                });
             }
-        }
-/*
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-
- */
-        );
+        });
     }
 
-
-    public void buttonfilechose(View view){
-        Button button = (Button)view;
-        if(button.getText().equals(getString(R.string.bt_filechose))){
+    public void buttonfilechose(View view) {
+        Button button = (Button) view;
+        if (button.getText().equals(getString(R.string.bt_filechose))) {
             openSystemFile();
             button.setText(getString(R.string.bt_loadfile));
-        }
-        else{
+            isPlayButtonDisabled = true;
+            Button playButton = findViewById(R.id.button_play);
+            playButton.setVisibility(View.INVISIBLE);
+            setprogress.setVisibility(View.INVISIBLE);
+            setvolume.setVisibility(View.INVISIBLE);
+
+        } else {
+            isPlayButtonDisabled = false;
+            Button playButton = findViewById(R.id.button_play);
+            playButton.setVisibility(View.VISIBLE);
+            setprogress.setVisibility(View.VISIBLE);
+            setvolume.setVisibility(View.VISIBLE);
+
             Log.d(TAG, "BeforeLoading: " + mpath);
-            if(mediastate!=0){
-                //mediastate==0意味播放器不在播放
+            if (mediastate != 0) {
+                //mediastate == 0  意味播放器不在播放
+                playButton.setText(R.string.bt_mediaplay);
                 mediaplayer.stop();
             }
             mediaplayer.loadResource(mpath, new IZegoMediaPlayerLoadResourceCallback() {
@@ -313,10 +340,6 @@ public void setVolume(){
                     currentResourceTotalDuration = mediaplayer.getTotalDuration();
                     Log.d(TAG, "currentResourceTotalDuration: " +
                             currentResourceTotalDuration);
-                    Toast.makeText(CreateRoomActivity.this,
-                            "currentResourceTotalDuration: " + currentResourceTotalDuration,
-                            Toast.LENGTH_LONG).show();
-                    //Toast.makeText(CreateRoomActivity.this, "加载:", Toast.LENGTH_LONG).show();
                 }
             });
             mediaplayer.setVolume(50);
@@ -324,19 +347,17 @@ public void setVolume(){
         }
     }
 
-    public void buttonmediaplay(View view){
-        Button button = (Button)view;
-        if(button.getText().equals(getString(R.string.bt_mediaplay))){
-            if(mediastate==2){
+    public void buttonmediaplay(View view) {
+        Button button = (Button) view;
+        if (button.getText().equals(getString(R.string.bt_mediaplay))) {
+            if (mediastate == 2) {
                 //如果播放器状态为暂停播放
                 mediaplayer.resume();
-            }
-            else{
+            } else {
                 mediaplayer.start();
             }
             button.setText(getString(R.string.bt_mediapause));
-        }
-        else{
+        } else {
             mediaplayer.pause();
             button.setText(getString(R.string.bt_mediaplay));
         }
@@ -369,6 +390,50 @@ public void setVolume(){
                 Log.i(TAG, "onActivityResult: mpath" + mpath);
             }
         }
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            //将buttonchosefile作为特征量
+            if (buttonchosefile.getVisibility() == View.VISIBLE) {
+                //再判断点击是否在所有控件外
+                if (hidejudge(buttonchosefile, ev) && hidejudge(buttonplay, ev) &&
+                        hidejudge(setvolume, ev) && hidejudge(setprogress, ev)) {
+                    buttonchosefile.setVisibility(View.GONE);
+                    buttonplay.setVisibility(View.GONE);
+                    setvolume.setVisibility(View.GONE);
+                    setprogress.setVisibility(View.GONE);
+                }
+
+            } else {
+                buttonchosefile.setVisibility(View.VISIBLE);
+
+                //对播放按钮和进度条和音量设置做特别判断
+                if (isPlayButtonDisabled == false) {
+                    buttonplay.setVisibility(View.VISIBLE);
+                    setprogress.setVisibility(View.VISIBLE);
+                    setvolume.setVisibility(View.VISIBLE);
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+    private boolean hidejudge(View view, MotionEvent ev) {
+        //判断点击是否发生在控件外
+        int[] location = {0, 0};
+        // 获取当前view在屏幕中离四边的边距
+        view.getLocationInWindow(location);
+
+        int left = location[0], top = location[1], right = view.getWidth(),
+                bottom = top + view.getHeight();
+
+        // 判断点击位置是否在view布局范围内
+        if (ev.getRawX() < left || ev.getRawX() > right
+                || ev.getY() < top || ev.getRawY() > bottom) {
+            return true;
+        } else return false;
     }
 
     @Override

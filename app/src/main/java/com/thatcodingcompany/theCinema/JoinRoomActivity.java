@@ -4,6 +4,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -47,6 +49,11 @@ public class JoinRoomActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_join_room);
         getSupportActionBar().hide();
+
+        //设置背景色
+        Resources res = getResources();
+        Drawable drawable = res.getDrawable(R.drawable.background);
+        this.getWindow().setBackgroundDrawable(drawable);
 
         engine = ZegoExpressEngine.createEngine(idConfig.appid, idConfig.appsign,
                 true, ZegoScenario.GENERAL, getApplication(), null);
