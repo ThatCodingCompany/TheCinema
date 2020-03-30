@@ -287,37 +287,23 @@ public class CreateRoomActivity extends AppCompatActivity {
 
     public void setVolume() {
         //setvolume=findViewById(R.id.seekBar_volume);
-        setvolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                                                 @Override
-                                                 public void onProgressChanged(SeekBar seekBar,
-                                                                               int progress,
-                                                                               boolean fromUser) {
-                                                     mediaplayer.setVolume(progress);
-                                                 }
+        setvolume.setOnSeekBarChangeListener(
+                new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        mediaplayer.setVolume(progress);
+                    }
 
-                                                 @Override
-                                                 public void onStartTrackingTouch(SeekBar seekBar) {
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
 
-                                                 }
+                    }
 
-                                                 @Override
-                                                 public void onStopTrackingTouch(SeekBar seekBar) {
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
 
-                                                 }
-                                             }
-/*
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-
- */
-        );
+                    }
+                });
     }
 
     public void setProg() {
@@ -354,11 +340,15 @@ public class CreateRoomActivity extends AppCompatActivity {
             isPlayButtonDisabled = true;
             Button playButton = findViewById(R.id.button_play);
             playButton.setVisibility(View.INVISIBLE);
+            setprogress.setVisibility(View.INVISIBLE);
+            setvolume.setVisibility(View.INVISIBLE);
 
         } else {
             isPlayButtonDisabled = false;
             Button playButton = findViewById(R.id.button_play);
             playButton.setVisibility(View.VISIBLE);
+            setprogress.setVisibility(View.VISIBLE);
+            setvolume.setVisibility(View.VISIBLE);
 
             Log.d(TAG, "BeforeLoading: " + mpath);
             if (mediastate != 0) {
