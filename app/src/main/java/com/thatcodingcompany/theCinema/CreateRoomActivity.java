@@ -72,7 +72,7 @@ public class CreateRoomActivity extends AppCompatActivity {
 
     private String mpath;
     private ZegoMediaPlayer mediaplayer = null;
-    private long currentResourceTotalDuration=100;
+    private long currentResourceTotalDuration = 100;
     private SeekBar setvolume;
     private Button buttonplay;
     private Button buttonchosefile;
@@ -229,10 +229,10 @@ public class CreateRoomActivity extends AppCompatActivity {
         //初始化控件
 
         textureView = findViewById(R.id.textureView);
-        buttonplay=findViewById(R.id.button_play);
-        buttonchosefile=findViewById(R.id.button_filechose);
-        setvolume=findViewById(R.id.seekBar_volume);
-        setprogress=findViewById(R.id.seekBar_progress);
+        buttonplay = findViewById(R.id.button_play);
+        buttonchosefile = findViewById(R.id.button_filechose);
+        setvolume = findViewById(R.id.seekBar_volume);
+        setprogress = findViewById(R.id.seekBar_progress);
 
         mediaplayer = ZegoMediaPlayer.createMediaPlayer();
         mediaplayer.setProgressInterval(10);
@@ -244,16 +244,19 @@ public class CreateRoomActivity extends AppCompatActivity {
             public void onMediaPlayerPlayingProgress(ZegoMediaPlayer mediaPlayer,
                                                      long millisecond) {
                 playingProgress = millisecond;
-                long total=100*playingProgress/currentResourceTotalDuration;
-                int t=(int)total;
+                long total = 100 * playingProgress / currentResourceTotalDuration;
+                int t = (int) total;
                 setprogress.setProgress(t);
             }
+
             @Override
-            public void onMediaPlayerStateUpdate(ZegoMediaPlayer mediaPlayer, ZegoMediaPlayerState state, int errorCode) {
+            public void onMediaPlayerStateUpdate(ZegoMediaPlayer mediaPlayer,
+                                                 ZegoMediaPlayerState state, int errorCode) {
                 // 本回调在UI线程被回调, 开发者可以在此进行UI的变化, 例如播放按钮的变化
-                Log.d(TAG, "onMediaPlayerStateUpdate: state = " + state.value() + ", errorCode = " + errorCode + ", zegoExpressMediaplayer = " + mediaPlayer);
-                mediastate=state.value();
-                if(mediastate==3){
+                Log.d(TAG, "onMediaPlayerStateUpdate: state = " + state.value() + ", errorCode = "
+                        + errorCode + ", zegoExpressMediaplayer = " + mediaPlayer);
+                mediastate = state.value();
+                if (mediastate == 3) {
                     //播放结束 更新按钮值
                     buttonplay.setText(getString(R.string.bt_mediaplay));
                 }
@@ -282,24 +285,26 @@ public class CreateRoomActivity extends AppCompatActivity {
         setProg();
     }
 
-public void setVolume(){
+    public void setVolume() {
         //setvolume=findViewById(R.id.seekBar_volume);
         setvolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mediaplayer.setVolume(progress);
-            }
+                                                 @Override
+                                                 public void onProgressChanged(SeekBar seekBar,
+                                                                               int progress,
+                                                                               boolean fromUser) {
+                                                     mediaplayer.setVolume(progress);
+                                                 }
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
+                                                 @Override
+                                                 public void onStartTrackingTouch(SeekBar seekBar) {
 
-            }
+                                                 }
 
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
+                                                 @Override
+                                                 public void onStopTrackingTouch(SeekBar seekBar) {
 
-            }
-        }
+                                                 }
+                                             }
 /*
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -330,7 +335,7 @@ public void setVolume(){
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                long nowprogress=currentResourceTotalDuration*setprogress.getProgress()/100;
+                long nowprogress = currentResourceTotalDuration * setprogress.getProgress() / 100;
                 mediaplayer.seekTo(nowprogress, new IZegoMediaPlayerSeekToCallback() {
                     @Override
                     public void onSeekToTimeCallback(int errorCode) {
@@ -341,16 +346,24 @@ public void setVolume(){
         });
     }
 
-    public void buttonfilechose(View view){
-        Button button = (Button)view;
-        if(button.getText().equals(getString(R.string.bt_filechose))){
+    public void buttonfilechose(View view) {
+        Button button = (Button) view;
+        if (button.getText().equals(getString(R.string.bt_filechose))) {
             openSystemFile();
             button.setText(getString(R.string.bt_loadfile));
-        }
-        else{
+            isPlayButtonDisabled = true;
+            Button playButton = findViewById(R.id.button_play);
+            playButton.setVisibility(View.INVISIBLE);
+
+        } else {
+            isPlayButtonDisabled = false;
+            Button playButton = findViewById(R.id.button_play);
+            playButton.setVisibility(View.VISIBLE);
+
             Log.d(TAG, "BeforeLoading: " + mpath);
-            if(mediastate!=0){
+            if (mediastate != 0) {
                 //mediastate==0意味播放器不在播放
+                playButton.setText(R.string.bt_mediaplay);
                 mediaplayer.stop();
             }
             mediaplayer.loadResource(mpath, new IZegoMediaPlayerLoadResourceCallback() {
@@ -376,19 +389,17 @@ public void setVolume(){
         }
     }
 
-    public void buttonmediaplay(View view){
-        Button button = (Button)view;
-        if(button.getText().equals(getString(R.string.bt_mediaplay))){
-            if(mediastate==2){
+    public void buttonmediaplay(View view) {
+        Button button = (Button) view;
+        if (button.getText().equals(getString(R.string.bt_mediaplay))) {
+            if (mediastate == 2) {
                 //如果播放器状态为暂停播放
                 mediaplayer.resume();
-            }
-            else{
+            } else {
                 mediaplayer.start();
             }
             button.setText(getString(R.string.bt_mediapause));
-        }
-        else{
+        } else {
             mediaplayer.pause();
             button.setText(getString(R.string.bt_mediaplay));
         }
@@ -425,34 +436,33 @@ public void setVolume(){
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (ev.getAction() == MotionEvent.ACTION_DOWN){
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             //将buttonchosefile作为特征量
-           if(buttonchosefile.getVisibility()==buttonchosefile.VISIBLE){
-               //再判断点击是否在所有控件外
-               if(hidejudge(buttonchosefile,ev)&&hidejudge(buttonplay,ev)&&
-                       hidejudge(setvolume,ev)&&hidejudge(setprogress,ev)){
-                   buttonchosefile.setVisibility(buttonchosefile.GONE);
-                   buttonplay.setVisibility(buttonplay.GONE);
-                   setvolume.setVisibility(setvolume.GONE);
-                   setprogress.setVisibility(setprogress.GONE);
-               }
+            if (buttonchosefile.getVisibility() == View.VISIBLE) {
+                //再判断点击是否在所有控件外
+                if (hidejudge(buttonchosefile, ev) && hidejudge(buttonplay, ev) &&
+                        hidejudge(setvolume, ev) && hidejudge(setprogress, ev)) {
+                    buttonchosefile.setVisibility(View.GONE);
+                    buttonplay.setVisibility(View.GONE);
+                    setvolume.setVisibility(View.GONE);
+                    setprogress.setVisibility(View.GONE);
+                }
 
-           }
-           else{
-               buttonchosefile.setVisibility(buttonchosefile.VISIBLE);
+            } else {
+                buttonchosefile.setVisibility(View.VISIBLE);
 
-               //对播放按钮和进度条和音量设置做特别判断
-               if(isPlayButtonDisabled == false) {
-                   buttonplay.setVisibility(buttonplay.VISIBLE);
-                   setprogress.setVisibility(setprogress.VISIBLE);
-                   setvolume.setVisibility(setvolume.VISIBLE);
-               }
-           }
+                //对播放按钮和进度条和音量设置做特别判断
+                if (isPlayButtonDisabled == false) {
+                    buttonplay.setVisibility(View.VISIBLE);
+                    setprogress.setVisibility(View.VISIBLE);
+                    setvolume.setVisibility(View.VISIBLE);
+                }
+            }
         }
         return super.dispatchTouchEvent(ev);
     }
 
-    private boolean hidejudge(View view,MotionEvent ev) {
+    private boolean hidejudge(View view, MotionEvent ev) {
         //判断点击是否发生在控件外
         int[] location = {0, 0};
         // 获取当前view在屏幕中离四边的边距
@@ -465,8 +475,7 @@ public void setVolume(){
         if (ev.getRawX() < left || ev.getRawX() > right
                 || ev.getY() < top || ev.getRawY() > bottom) {
             return true;
-        }
-        else return false;
+        } else return false;
     }
 
     @Override
